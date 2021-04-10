@@ -10,7 +10,7 @@ variable "iam_accounts" {
 }
 
 variable "region" {
-  default = "us-east-2"
+  default = "ap-south-1"
 }
 
 variable "vpc_cidr" {
@@ -143,8 +143,8 @@ resource "aws_security_group" "sg-nodejs-instance" {
 }
 
 # INSTANCE
-resource "aws_instance" "nodejs1" {
-  //count = 4
+resource "aws_instance" "node_instances" {
+  count = 4
 
   ami = data.aws_ami.aws-linux.id
   instance_type = var.environment_instance_settings["PROD"].instance_type
@@ -156,7 +156,12 @@ resource "aws_instance" "nodejs1" {
   tags = {Environment = var.environment_list[0]}
 }
 
+///adding a new resource for creation of iam users
 
+resource "aws_iam_user" "iam-accounts" {
+  for_each = var.iam_accounts         //iam accounts values are present in the tfvars file
+  name = each.key
+}
 # //////////////////////////////
 # DATA
 # //////////////////////////////
@@ -186,5 +191,5 @@ data "aws_ami" "aws-linux" {
 # OUTPUT
 # //////////////////////////////
 output "instance-dns" {
-  value = aws_instance.nodejs1.public_dns
+  value = aws_instance.node_instances.*.public_dns
 }
